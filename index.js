@@ -39,6 +39,17 @@ app.get("/info", (request, response) => {
         </div>`);
 });
 
+app.get("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const user = users.find((user) => user.id === id);
+  
+  if (user) {
+    response.json(user);
+  } else {
+    response.status(404).send({ error: "User not found" });
+  }
+});
+
 app.listen(3001, () => {
   console.log("Server running on port 3001");
 });
