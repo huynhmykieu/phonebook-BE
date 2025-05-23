@@ -3,7 +3,7 @@ const app = express();
 
 app.use(express.json());
 
-const users = [
+let users = [
   {
     id: "1",
     name: "Arto Hellas",
@@ -56,6 +56,20 @@ app.delete("/api/persons/:id", (request, response) => {
   response.json(deletedUser);
 
   response.status(204).end();
+});
+
+app.post("/api/persons", (request, response) => {
+  const id = Math.floor(Math.random() * 10000).toString();
+  const { name, number } = request.body;
+
+  const newUser = {
+    id,
+    name,
+    number,
+  };
+
+  users = users.concat(newUser);
+  response.json(newUser);
 });
 
 app.listen(3001, () => {
