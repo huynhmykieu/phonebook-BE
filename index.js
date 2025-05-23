@@ -42,12 +42,20 @@ app.get("/info", (request, response) => {
 app.get("/api/persons/:id", (request, response) => {
   const id = request.params.id;
   const user = users.find((user) => user.id === id);
-  
+
   if (user) {
     response.json(user);
   } else {
     response.status(404).send({ error: "User not found" });
   }
+});
+
+app.delete("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  users = users.filter((user) => user.id !== id);
+  response.json(deletedUser);
+
+  response.status(204).end();
 });
 
 app.listen(3001, () => {
