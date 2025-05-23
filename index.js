@@ -35,7 +35,7 @@ let users = [
   },
 ];
 
-app.get("/api/persons", (request, response) => {
+app.get("/persons", (request, response) => {
   response.json(users);
 });
 
@@ -48,7 +48,7 @@ app.get("/info", (request, response) => {
         </div>`);
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/persons/:id", (request, response) => {
   const id = request.params.id;
   const user = users.find((user) => user.id === id);
 
@@ -59,15 +59,15 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = request.params.id;
+app.delete("/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
   users = users.filter((user) => user.id !== id);
-  response.json(deletedUser);
+  response.json(users);
 
   response.status(204).end();
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/persons", (request, response) => {
   const id = Math.floor(Math.random() * 10000).toString();
   const { name, number } = request.body;
 
