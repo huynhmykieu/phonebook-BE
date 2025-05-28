@@ -49,11 +49,14 @@ app.get("/persons/:id", (request, response) => {
 });
 
 app.delete("/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  users = users.filter((user) => user.id !== id);
-  response.json(users);
-
-  response.status(204).end();
+  Person.findByIdAndDelete(request.params.id)
+    .then(() => {
+      response.status(204).end();
+    })
+    .catch((error) => {
+      console.error("Error deleting person:", error.message);
+      response.status(500).send({ error: "Failed to delete person" });
+    });
 });
 
 app.post("/persons", (request, response) => {
