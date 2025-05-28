@@ -17,49 +17,48 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
 
-app.get("/persons", (request, response) => {
+app.get("/persons", (request, response, next) => {
   Person.find({})
     .then((persons) => {
       response.json(persons);
     })
-    .catch((error) => {
-      console.error("Error fetching persons:", error.message);
-      response.status(500).send({ error: "Failed to fetch persons" });
-    });
+    .catch((error) => next(error));
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
   const date = new Date();
-  const info = `Phonebook has info for ${users.length} people`;
-  response.send(`<div>
+  Person.countDocuments({})
+    .then((count) => {
+      const info = `Phonebook has info for ${count} people`;
+      response.send(`<div>
         <p>${info}</p>
         <p>${date}</p>
         </div>`);
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/persons/:id", (request, response) => {
-  const id = request.params.id;
-  const user = users.find((user) => user.id === id);
-
-  if (user) {
-    response.json(user);
-  } else {
-    response.status(404).send({ error: "User not found" });
-  }
+app.get("/persons/:id", (request, response, next) => {
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).send({ error: "Person not found" });
+      }
+    })
+    .catch((error) => next(error));
 });
 
-app.delete("/persons/:id", (request, response) => {
+app.delete("/persons/:id", (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
     .then(() => {
       response.status(204).end();
     })
-    .catch((error) => {
-      console.error("Error deleting person:", error.message);
-      response.status(500).send({ error: "Failed to delete person" });
-    });
+    .catch((error) => next(error));
 });
 
-app.post("/persons", (request, response) => {
+app.post("/persons", (request, response, next) => {
   const { name, number } = request.body;
 
   if (!name || !number) {
@@ -81,11 +80,26 @@ app.post("/persons", (request, response) => {
     .then((savedPerson) => {
       response.status(201).json(savedPerson);
     })
-    .catch((error) => {
-      console.error("Error saving new person:", error.message);
-      return response.status(500).send({ error: "Failed to save person" });
-    });
+    .catch((error) => next(error));
 });
+
+// Unknown endpoint handler
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "Unknown endpoint" });
+};
+app.use(unknownEndpoint);
+
+// Error handler middleware
+const errorHandler = (error, request, response, next) => {
+  console.error("Error:", error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "Malformatted ID" });
+  }
+
+  next(error);
+};
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
