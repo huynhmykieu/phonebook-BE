@@ -17,7 +17,6 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
 
-
 app.get("/persons", (request, response) => {
   Person.find({})
     .then((persons) => {
@@ -58,26 +57,31 @@ app.delete("/persons/:id", (request, response) => {
 });
 
 app.post("/persons", (request, response) => {
-  const id = Math.floor(Math.random() * 10000).toString();
   const { name, number } = request.body;
 
   if (!name || !number) {
     return response.status(400).json({ error: "Name or number is missing" });
   }
 
-  const existingUser = users.find((user) => user.name === name);
-  if (existingUser) {
-    return response.status(400).json({ error: "Name must be unique" });
-  }
+  // const existingUser = users.find((user) => user.name === name);
+  // if (existingUser) {
+  //   return response.status(400).json({ error: "Name must be unique" });
+  // }
 
-  const newUser = {
-    id,
+  const person = new Person({
     name,
     number,
-  };
+  });
 
-  users = users.concat(newUser);
-  response.json(newUser);
+  person
+    .save()
+    .then((savedPerson) => {
+      response.status(201).json(savedPerson);
+    })
+    .catch((error) => {
+      console.error("Error saving new person:", error.message);
+      return response.status(500).send({ error: "Failed to save person" });
+    });
 });
 
 const PORT = process.env.PORT;
