@@ -49,7 +49,8 @@ app.get("/info", (request, response, next) => {
 });
 
 app.get("/persons/:id", (request, response, next) => {
-  Person.findById(request.params.id)
+  const id = request.params.id;
+  Person.findById(id)
     .then((person) => {
       if (person) {
         response.json(person);
