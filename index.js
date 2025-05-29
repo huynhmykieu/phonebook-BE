@@ -7,7 +7,11 @@ const Person = require("./models/person");
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://phonebook-fe-7ud0.onrender.com",
+  })
+);
 
 morgan.token("body", (req) => {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
@@ -98,7 +102,7 @@ app.put("/persons/:id", (request, response, next) => {
     { new: true, runValidators: true, context: "query" }
   )
     .then((updatedPerson) => {
-        console.log('updatedPerson', updatedPerson)
+      console.log("updatedPerson", updatedPerson);
 
       if (updatedPerson) {
         return response.json(updatedPerson);
