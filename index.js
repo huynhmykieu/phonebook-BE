@@ -20,7 +20,13 @@ app.use(
 app.get("/persons", (request, response, next) => {
   Person.find({})
     .then((persons) => {
-      response.json(persons);
+      response.json(
+        persons.map((p) => ({
+          id: p._id.toString(),
+          name: p.name,
+          number: p.number,
+        }))
+      );
     })
     .catch((error) => next(error));
 });
@@ -68,16 +74,37 @@ app.post("/persons", (request, response, next) => {
   Person.findOne({ name })
     .then((existingPerson) => {
       if (existingPerson) {
-        existingPerson.number = number;
-        return existingPerson
-          .save()
-          .then((updatedPerson) => response.json(updatedPerson));
+        return response.status(400).json({ error: "Name must be unique" });
       }
 
       const person = new Person({ name, number });
       return person
         .save()
         .then((savedPerson) => response.status(201).json(savedPerson));
+    })
+    .catch((error) => next(error));
+});
+
+app.put("/persons/:id", (request, response, next) => {
+  const { number } = request.body;
+
+  if (!number) {
+    return response.status(400).json({ error: "Number is missing" });
+  }
+
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { number },
+    { new: true, runValidators: true, context: "query" }
+  )
+    .then((updatedPerson) => {
+        console.log('updatedPerson', updatedPerson)
+
+      if (updatedPerson) {
+        return response.json(updatedPerson);
+      } else {
+        return response.status(404).json({ error: "Person not found" });
+      }
     })
     .catch((error) => next(error));
 });
