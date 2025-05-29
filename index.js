@@ -7,11 +7,12 @@ const Person = require("./models/person");
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: "https://phonebook-fe-7ud0.onrender.com",
-  })
-);
+app.use(cors());
+// app.use(
+//   cors({
+//     origin: "https://phonebook-fe-7ud0.onrender.com",
+//   })
+// );
 
 morgan.token("body", (req) => {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
@@ -124,8 +125,10 @@ app.use(unknownEndpoint);
 const errorHandler = (error, request, response, next) => {
   console.error("Error:", error.message);
 
-  if (error.name === "CastError") {
-    return response.status(400).send({ error: "Malformatted ID" });
+  if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
+  } else if (error.name === "CastError") {
+    return response.status(400).json({ error: "Malformatted ID" });
   }
 
   next(error);
