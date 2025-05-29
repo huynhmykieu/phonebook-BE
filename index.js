@@ -65,20 +65,19 @@ app.post("/persons", (request, response, next) => {
     return response.status(400).json({ error: "Name or number is missing" });
   }
 
-  // const existingUser = users.find((user) => user.name === name);
-  // if (existingUser) {
-  //   return response.status(400).json({ error: "Name must be unique" });
-  // }
+  Person.findOne({ name })
+    .then((existingPerson) => {
+      if (existingPerson) {
+        existingPerson.number = number;
+        return existingPerson
+          .save()
+          .then((updatedPerson) => response.json(updatedPerson));
+      }
 
-  const person = new Person({
-    name,
-    number,
-  });
-
-  person
-    .save()
-    .then((savedPerson) => {
-      response.status(201).json(savedPerson);
+      const person = new Person({ name, number });
+      return person
+        .save()
+        .then((savedPerson) => response.status(201).json(savedPerson));
     })
     .catch((error) => next(error));
 });
